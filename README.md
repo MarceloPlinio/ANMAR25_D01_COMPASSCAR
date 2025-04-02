@@ -1,12 +1,19 @@
 # ANMAR25_D01_COMPASSCAR
 
-# Compass Car API
+# Compass Car API - Branch Develop
 
 ## 📌 Project Overview
 
 Welcome to the **Compass Car API** project, an application developed to manage the car fleet of a rental company. This project consists of an **MVP (Minimum Viable Product)** of an API that allows you to perform CRUD (Create, Read, Update, Delete) operations on cars registered in the system.
 
+## ⏭️ Next Steps
 
+This project is in its initial development phase. The following features will be implemented:
+
+-   [ ] Code optimization.
+-   [ ] Sequelize implementation.
+-   [ ] Data validation implementation.
+-   [ ] Unit and integration test implementation.
 
 ## 🛠 Technologies Used
 
