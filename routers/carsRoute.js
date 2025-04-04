@@ -6,39 +6,15 @@ const { read } = require("../models/carModel");
 //crud
 
 // GET
-router.get("/cars", (req, res) => {
-  const listCars = carController.read();
-  listCars
-    .then((cars) => res.status(200).json(cars))
-    .catch((error) => res.status(400).json(error.message));
-});
+router.get("/cars", carController.read);
 
 // POST
-router.post("/cars", (req, res) => {
-  const newCar = req.body;
-  const car = carController.create(newCar);
-  car
-    .then((carCreate) => res.status(201).json(carCreate))
-    .catch((error) => res.status(400).json(error.message));
-});
+router.post("/cars", carController.create);
 
 // PUT
-router.put("/cars/:id", (req, res) => {
-  const { id } = req.params;
-  const updateCar = req.body;
-  const car = carController.update(updateCar, id);
-  car
-    .then((resultUpdateCar) => res.status(200).json(resultUpdateCar))
-    .catch((error) => res.status(400).json(error.message));
-});
+router.put("/cars/:id", carController.update);
 
 // DELETE
-router.delete("/cars/:id", (req, res) => {
-  const { id } = req.params;
-  const car = carController.delete(id);
-  car
-    .then((resultDeletedCar) => res.status(200).json(resultDeletedCar))
-    .catch((error) => res.status(400).json(error.message));
-});
+router.delete("/cars/:id", carController.delete);
 
 module.exports = router;
