@@ -1,21 +1,32 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+
 const router = require("./routers/index");
 const conn = require("./database/connection");
+const sequelize = require("./database/sequelize");
 const tables = require("./database/tables");
-const carRoute = require('./routers/carsRoute')
+const carRoute = require("./routers/carsRoute");
 
-router(app, express);
-tables.init(conn);
+app.use(express.json());
 
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Database sync with sequelize.");
 
-app.use("/api/v1", carRoute);
+    router(app, express);
+    tables.init(conn);
+    app.use("/api/v1", carRoute);
 
-app.listen(3000, (error) => {
-  if (error) {
-    console.log("An error has occurred");
-    return;
-  }
-  console.log("Running");
-});
+    app.listen(port, (error) => {
+      if (error) {
+        console.log("An error has occurred");
+        return;
+      }
+      console.log(`Running on port ${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Error to sync database:", err);
+  });
