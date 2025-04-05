@@ -1,9 +1,6 @@
 const { Router } = require("express");
 const router = Router();
 const carController = require("../controllers/carController");
-const { read } = require("../models/carModel");
-
-//crud
 
 // GET
 router.get("/cars", carController.read);
