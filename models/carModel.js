@@ -30,6 +30,16 @@ class CarModel {
     const sql = "DELETE FROM cars WHERE ID = ?";
     return this.executeQuery(sql, id);
   }
+
+  findByPlate(plate) {
+    const sql = "SELECT * FROM cars WHERE plate = ?";
+    return this.executeQuery(sql, [plate]);
+  }
+
+  findById(id) {
+    const sql = "SELECT * FROM cars WHERE id = ?";
+    return this.executeQuery(sql, id);
+  }
 }
 
 module.exports = new CarModel();
