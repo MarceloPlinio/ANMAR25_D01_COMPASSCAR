@@ -2,7 +2,7 @@
   "name": "compass-car-api",
   "version": "1.0.0",
   "description": "Compass Car API is an MVP project designed for a car rental company. This API provides a management system for vehicles, allowing CRUD operations with proper validations and integration with a MySQL database using Sequelize.",
-  "main": "index.js",
+  "main": "api.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,6 +13,7 @@
   "author": "Marcelo Plinio",
   "license": "ISC",
   "dependencies": {
+    "compass-car-api": "file:",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
