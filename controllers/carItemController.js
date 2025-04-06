@@ -3,7 +3,7 @@ const Car = require("../models/car");
 
 class CarItemController {
   async updateItems(req, res) {
-    console.log("BODY RECEIVED:", req.body);
+    console.log("Entered updateItems in carItemController");
 
     const { id: carId } = req.params;
     const items = req.body;
@@ -44,9 +44,12 @@ class CarItemController {
 
       await CarItem.bulkCreate(carItems);
 
+      console.log("Items successfully saved to the database");
+
       return res.status(204).send();
     } catch (error) {
-      console.error("Error while updating car items:", error);
+      console.error("Error saving car items:", error);
+
       return res.status(500).json({
         errors: ["An unexpected error occurred while updating car items."],
       });
