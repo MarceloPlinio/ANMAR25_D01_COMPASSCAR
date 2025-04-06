@@ -6,15 +6,19 @@ const carItemController = require("../controllers/carItemController");
 // GET
 router.get("/cars", carController.read);
 
+// GET ID
+router.get("/cars/:id", carController.show);
+
 // POST
 router.post("/cars", carController.create);
 
 // PUT
 router.put("/cars/:id", carController.update);
 
-router.put("/cars/:id/items", carItemController.updateItems);
-
 // DELETE
 router.delete("/cars/:id", carController.delete);
+
+// PUT ID
+router.put("/cars/:id/items", carItemController.updateItems);
 
 module.exports = router;
