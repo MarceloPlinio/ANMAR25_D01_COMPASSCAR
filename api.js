@@ -30,3 +30,10 @@ sequelize
   .catch((err) => {
     console.error("Error to sync database:", err);
   });
+
+
+// Middleware Gneric error
+app.use((err, req, res, next) => {
+  console.error(err);  
+  res.status(500).json({ errors: ["Internal server error"] });  
+});
