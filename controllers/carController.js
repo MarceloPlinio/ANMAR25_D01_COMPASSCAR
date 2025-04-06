@@ -1,4 +1,5 @@
 const Car = require("../models/car");
+const CarItem = require("../models/carItem");
 
 class CarController {
   // GET /cars
@@ -107,6 +108,90 @@ class CarController {
       return res.status(200).json({ message: "Car deleted successfully" });
     } catch (error) {
       return res.status(400).json({ error: error.message });
+    }
+  }
+
+  // GET /cars/:id
+  async show(req, res) {
+    const { id } = req.params;
+
+    try {
+      const car = await Car.findByPk(id, {
+        include: [
+          {
+            model: CarItem,
+            as: "carItems",
+            attributes: ["name"],
+          },
+        ],
+      });
+
+      if (!car) {
+        return res.status(404).json({ error: "Car not found" });
+      }
+
+      return res.status(200).json({
+        id: car.id,
+        brand: car.brand,
+        model: car.model,
+        plate: car.plate,
+        year: car.year,
+        created_at: car.created_at, 
+        items: car.carItems.map((item) => item.name),
+      });
+    } catch (error) {
+      console.error("Error fetching car:", error);
+      return res.status(500).json({ error: "An unexpected error occurred" });
+    }
+  }
+
+  async list(req, res) {
+    try {
+      const { year, final_plate, brand } = req.query;
+
+    
+      let page = parseInt(req.query.page) || 1;
+      let limit = parseInt(req.query.limit) || 5;
+
+      if (page < 1) page = 1;
+      if (limit < 1) limit = 5;
+      if (limit > 10) limit = 10;
+
+      const offset = (page - 1) * limit;
+
+      
+      const where = {};
+      if (year) {
+        where.year = { [require("sequelize").Op.gte]: parseInt(year) };
+      }
+      if (final_plate) {
+        where.plate = {
+          [require("sequelize").Op.like]: `%${final_plate}`
+        };
+      }
+      if (brand) {
+        where.brand = {
+          [require("sequelize").Op.like]: `%${brand}%`
+        };
+      }
+
+      const { count, rows } = await Car.findAndCountAll({
+        where,
+        offset,
+        limit,
+        order: [["id", "ASC"]],
+      });
+
+      const pages = Math.ceil(count / limit);
+
+      return res.status(200).json({
+        count,
+        pages,
+        data: rows
+      });
+    } catch (error) {
+      console.error("Error listing cars:", error);
+      return res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 }
