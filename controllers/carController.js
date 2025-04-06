@@ -141,12 +141,15 @@ class CarController {
 
     try {
       const car = await Car.findByPk(id);
-      if (!car) return res.status(404).json({ error: "Car not found" });
+      if (!car) {
+        return res.status(404).json({ errors: ["car not found"] });
+      }
 
-      await car.destroy();
-      return res.status(200).json({ message: "Car deleted successfully" });
+      await car.destroy(); // 
+      return res.status(204).send(); 
     } catch (error) {
-      return res.status(400).json({ error: error.message });
+      console.error("Error deleting car:", error);
+      return res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
 
