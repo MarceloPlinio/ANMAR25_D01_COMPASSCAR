@@ -1,44 +1,29 @@
-const conn = require("../database/connection");
+// models/carModel.js
+const Car = require("./car");
+
 class CarModel {
-  executeQuery(sql, parameters = "") {
-    return new Promise((resolve, reject) => {
-      conn.query(sql, parameters, (error, response) => {
-        if (error) {
-          return reject(error);
-        }
-        return resolve(response);
-      });
-    });
+  async read() {
+    return Car.findAll();
   }
 
-  read() {
-    const sql = "SELECT * FROM cars";
-    return this.executeQuery(sql);
+  async create(newCar) {
+    return Car.create(newCar);
   }
 
-  create(newCar) {
-    const sql = "INSERT INTO cars SET ?";
-    return this.executeQuery(sql, newCar);
+  async update(updateCar, id) {
+    return Car.update(updateCar, { where: { id } });
   }
 
-  update(updateCar, id) {
-    const sql = "UPDATE cars SET ? WHERE ID = ?";
-    return this.executeQuery(sql, [updateCar, id]);
+  async delete(id) {
+    return Car.destroy({ where: { id } });
   }
 
-  delete(id) {
-    const sql = "DELETE FROM cars WHERE ID = ?";
-    return this.executeQuery(sql, id);
+  async findByPlate(plate) {
+    return Car.findAll({ where: { plate } });
   }
 
-  findByPlate(plate) {
-    const sql = "SELECT * FROM cars WHERE plate = ?";
-    return this.executeQuery(sql, [plate]);
-  }
-
-  findById(id) {
-    const sql = "SELECT * FROM cars WHERE id = ?";
-    return this.executeQuery(sql, id);
+  async findById(id) {
+    return Car.findByPk(id);
   }
 }
 
