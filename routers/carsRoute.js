@@ -22,4 +22,8 @@ router.delete("/cars/:id", carController.delete);
 // PUT ID
 router.put("/cars/:id/items", carItemController.updateItems);
 
+// PATCH 
+router.patch('/cars/:id', carController.patch);
+
+
 module.exports = router;
