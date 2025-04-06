@@ -1,5 +1,15 @@
 const Car = require("../models/car");
 const CarItem = require("../models/carItem");
+const {
+  isValidPlate,
+  normalizePlate,
+  validateYear,
+  validateBrand,
+  validateModel,
+  isPlateDuplicate,
+  validatePatchCarData,
+} = require("../utils/validator");
+const { Op } = require("sequelize");
 
 class CarController {
   // GET /cars
@@ -14,49 +24,28 @@ class CarController {
 
   // POST /cars
   async create(req, res) {
-    const errors = [];
     const newCar = req.body;
+    const errors = [];
 
-    // Validate brand
-    if (typeof newCar.brand !== "string" || newCar.brand.trim() === "") {
-      errors.push("brand is required");
-    }
+    const brandError = validateBrand(newCar.brand);
+    if (brandError) errors.push(brandError);
 
-    // Validate model
-    if (typeof newCar.model !== "string" || newCar.model.trim() === "") {
-      errors.push("model is required");
-    }
+    const modelError = validateModel(newCar.model);
+    if (modelError) errors.push(modelError);
 
-    // Validate year
-    if (typeof newCar.year !== "number" || !Number.isInteger(newCar.year)) {
-      errors.push("year is required");
-    } else if (newCar.year < 2016 || newCar.year > 2026) {
-      errors.push("year must be between 2016 and 2026");
-    }
+    const yearError = validateYear(newCar.year);
+    if (yearError) errors.push(yearError);
 
-    // Validate plate
-    if (typeof newCar.plate !== "string" || newCar.plate.trim() === "") {
+    if (!newCar.plate || typeof newCar.plate !== "string" || newCar.plate.trim() === "") {
       errors.push("plate is required");
     } else {
-      const plate = newCar.plate.toUpperCase();
-
-      if (
-        plate.length !== 8 ||
-        plate.charAt(0) < 'A' || plate.charAt(0) > 'Z' ||
-        plate.charAt(1) < 'A' || plate.charAt(1) > 'Z' ||
-        plate.charAt(2) < 'A' || plate.charAt(2) > 'Z' ||
-        plate.charAt(3) !== '-' ||
-        isNaN(plate.charAt(4)) ||
-        plate.charAt(5) < 'A' || plate.charAt(5) > 'J' ||
-        isNaN(plate.charAt(6)) ||
-        isNaN(plate.charAt(7))
-      ) {
+      const plate = normalizePlate(newCar.plate);
+      if (!isValidPlate(plate)) {
         errors.push("plate must be in the correct format ABC-1C34");
       } else {
         newCar.plate = plate;
-
-        const existingCar = await Car.findOne({ where: { plate } });
-        if (existingCar) {
+        const plateExists = await isPlateDuplicate(plate);
+        if (plateExists) {
           errors.push("car already registered");
         }
       }
@@ -83,11 +72,63 @@ class CarController {
 
     try {
       const car = await Car.findByPk(id);
-      if (!car) {
-        return res.status(404).json({ error: "Car not found" });
-      }
+      if (!car) return res.status(404).json({ error: "Car not found" });
 
       await car.update(updateCar);
+      return res.status(200).json(car);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  // PATCH /cars/:id
+  async patch(req, res) {
+    const { id } = req.params;
+    const updates = req.body;
+    const errors = [];
+
+    try {
+      const car = await Car.findByPk(id);
+      if (!car) return res.status(404).json({ error: "Car not found" });
+
+      if (updates.brand !== undefined) {
+        const err = validateBrand(updates.brand);
+        if (err) errors.push(err);
+      }
+
+      if (updates.model !== undefined) {
+        const err = validateModel(updates.model);
+        if (err) errors.push(err);
+      }
+
+      if (updates.year !== undefined) {
+        const err = validateYear(updates.year);
+        if (err) errors.push(err);
+      }
+
+      if (updates.plate !== undefined) {
+        if (typeof updates.plate !== "string" || updates.plate.trim() === "") {
+          errors.push("plate is required");
+        } else {
+          const plate = normalizePlate(updates.plate);
+          if (!isValidPlate(plate)) {
+            errors.push("plate must be in the correct format ABC-1C34");
+          } else {
+            updates.plate = plate;
+            const plateExists = await isPlateDuplicate(plate, id);
+            if (plateExists) {
+              errors.push("car already registered");
+            }
+          }
+        }
+      }
+
+      if (errors.length > 0) {
+        const statusCode = errors.includes("car already registered") ? 409 : 400;
+        return res.status(statusCode).json({ errors });
+      }
+
+      await car.update(updates);
       return res.status(200).json(car);
     } catch (error) {
       return res.status(400).json({ error: error.message });
@@ -100,9 +141,7 @@ class CarController {
 
     try {
       const car = await Car.findByPk(id);
-      if (!car) {
-        return res.status(404).json({ error: "Car not found" });
-      }
+      if (!car) return res.status(404).json({ error: "Car not found" });
 
       await car.destroy();
       return res.status(200).json({ message: "Car deleted successfully" });
@@ -126,9 +165,7 @@ class CarController {
         ],
       });
 
-      if (!car) {
-        return res.status(404).json({ error: "Car not found" });
-      }
+      if (!car) return res.status(404).json({ error: "Car not found" });
 
       return res.status(200).json({
         id: car.id,
@@ -136,7 +173,7 @@ class CarController {
         model: car.model,
         plate: car.plate,
         year: car.year,
-        created_at: car.created_at, 
+        created_at: car.created_at,
         items: car.carItems.map((item) => item.name),
       });
     } catch (error) {
@@ -145,11 +182,11 @@ class CarController {
     }
   }
 
+  // GET cars 
   async list(req, res) {
     try {
       const { year, final_plate, brand } = req.query;
 
-    
       let page = parseInt(req.query.page) || 1;
       let limit = parseInt(req.query.limit) || 5;
 
@@ -159,20 +196,15 @@ class CarController {
 
       const offset = (page - 1) * limit;
 
-      
       const where = {};
       if (year) {
-        where.year = { [require("sequelize").Op.gte]: parseInt(year) };
+        where.year = { [Op.gte]: parseInt(year) };
       }
       if (final_plate) {
-        where.plate = {
-          [require("sequelize").Op.like]: `%${final_plate}`
-        };
+        where.plate = { [Op.like]: `%${final_plate}` };
       }
       if (brand) {
-        where.brand = {
-          [require("sequelize").Op.like]: `%${brand}%`
-        };
+        where.brand = { [Op.like]: `%${brand}%` };
       }
 
       const { count, rows } = await Car.findAndCountAll({
@@ -184,13 +216,34 @@ class CarController {
 
       const pages = Math.ceil(count / limit);
 
-      return res.status(200).json({
-        count,
-        pages,
-        data: rows
-      });
+      return res.status(200).json({ count, pages, data: rows });
     } catch (error) {
       console.error("Error listing cars:", error);
+      return res.status(500).json({ error: "An unexpected error occurred" });
+    }
+  }
+
+  async patch(req, res) {
+    const { id } = req.params;
+    const partialData = req.body;
+  
+    try {
+      const car = await Car.findByPk(id);
+      if (!car) {
+        return res.status(404).json({ error: "Car not found" });
+      }
+  
+      const errors = await validatePatchCarData(partialData, car);
+  
+      if (errors.length > 0) {
+        const statusCode = errors.includes("car already registered") ? 409 : 400;
+        return res.status(statusCode).json({ errors });
+      }
+  
+      await car.update(partialData);
+      return res.status(200).json(car);
+    } catch (error) {
+      console.error("Error patching car:", error);
       return res.status(500).json({ error: "An unexpected error occurred" });
     }
   }
