@@ -4,10 +4,11 @@ const carController = require("../controllers/carController");
 const carItemController = require("../controllers/carItemController");
 
 // GET
+router.get("/cars", carController.list);
+router.get("/cars/:id", carController.show);
 router.get("/cars", carController.read);
 
-// GET ID
-router.get("/cars/:id", carController.show);
+
 
 // POST
 router.post("/cars", carController.create);
