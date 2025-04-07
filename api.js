@@ -29,6 +29,7 @@ app.use("/api/v1", carRoute);
 
 createDatabaseIfNotExists()
   .then(() => {
+    console.log('Created Tables cars and cars_items')
     return sequelize.sync();
   })
   .then(() => {
