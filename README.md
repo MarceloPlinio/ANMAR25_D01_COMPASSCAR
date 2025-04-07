@@ -109,13 +109,13 @@ Lists all cars with optional filters and pagination.
 
 
 Query Parameters
-page: Page number (default: 1) example: api/v1/cars?page=2
-limit: Number of cars per page (default: 5): /api/v1/cars?limit=5
-brand: Filter by brand: /api/v1/cars?brand=Honda
-year: Filter by year: /api/v1/cars?year=2020
-final_plate: Filter by last character of the license plate: /api/v1/cars?final_plate=7
 
-You can combine multiple parameters, for example:
+- page: Page number (default: 1) example: api/v1/cars?page=2
+- limit: Number of cars per page (default: 5): /api/v1/cars?limit=5
+- brand: Filter by brand: /api/v1/cars?brand=Honda
+- year: Filter by year: /api/v1/cars?year=2020
+- final_plate: Filter by last character of the license plate: /api/v1/cars?final_plate=7
+- You can combine multiple parameters, for example:
 /api/v1/cars?page=2&limit=10&brand=Ford&year=2018&final_plate=3
 
 Responses
