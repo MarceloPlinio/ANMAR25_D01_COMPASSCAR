@@ -4,17 +4,25 @@ const Car = require("../models/car");
 class CarItemController {
   async updateItems(req, res) {
     console.log("Entered updateItems in carItemController");
-
     const { id: carId } = req.params;
     const items = req.body;
 
     const errors = [];
 
-    if (!Array.isArray(items) || items.length === 0) {
+    if (!Array.isArray(items)) {
+      console.warn("Invalid request: 'items' is not an array");
+      return res.status(400).json({
+        errors: ["items must be an array"],
+      });
+    }
+
+    if (items.length === 0) {
+      console.warn("'items' array is empty");
       errors.push("items is required");
     }
 
     if (items.length > 5) {
+      console.warn("'items' array exceeds the limit of 5");
       errors.push("items must be a maximum of 5");
     }
 
